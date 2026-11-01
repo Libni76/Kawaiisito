@@ -379,9 +379,17 @@
             return `modelo${product.id}/${folderType}/${viewKey}.jpg`;
         }
 
+        function handleImageError(img, productId, viewKey) {
+            if (!img) return;
+            img.onerror = null;
+            if (img.parentElement) {
+                img.parentElement.innerHTML = getCharacterSVG(productId, viewKey);
+            }
+        }
+
         function renderProductMedia(product, viewKey) {
             const src = getImagePath(product, viewKey);
-            return `<img src="${src}" alt="${product.name} - ${viewLabels[viewKey]}" class="w-full h-full max-h-[260px] object-contain rounded-xl transition-all" onerror="this.onerror=null; this.parentElement.innerHTML=getCharacterSVG(${product.id}, '${viewKey}');">`;
+            return `<img src="${src}" alt="${product.name} - ${viewLabels[viewKey]}" class="w-full h-full max-h-[260px] object-contain rounded-xl transition-all" onerror="handleImageError(this, ${product.id}, '${viewKey}')">`;
         }
 
         // Ilustraciones SVG Kawaii de respaldo si no hay imagen local
@@ -427,6 +435,8 @@
             const grid = document.getElementById('productsGrid');
             const emptyState = document.getElementById('emptyState');
 
+            if (!grid) return;
+
             const filtered = products.filter(p => {
                 const matchesCategory = (activeCategory === "Todos") || (p.category === activeCategory);
                 const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -434,14 +444,15 @@
                 return matchesCategory && matchesSearch;
             });
 
-            document.getElementById('productCountBadge').textContent = `${filtered.length} modelos`;
+            const countBadge = document.getElementById('productCountBadge');
+            if (countBadge) countBadge.textContent = `${filtered.length} modelos`;
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
                 return;
             } else {
-                emptyState.classList.add('hidden');
+                if (emptyState) emptyState.classList.add('hidden');
             }
 
             grid.innerHTML = filtered.map(product => {
@@ -538,4 +549,150 @@
                                 </div>
                                 <div class="flex items-center gap-1">
                                     ${product.childSizes.map(sz => `
-                                        <button onclick="selectProductSize(${product.id
+                                        <button onclick="selectProductSize(${product.id}, 'child', '${sz}')" 
+                                                class="w-7 h-7 rounded-lg font-extrabold text-xs transition-all ${!isAdult && state.size === sz ? 'bg-kawaii-pink text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border-kawaii-pink'}">
+                                            ${sz}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Adult Sizes Box -->
+                            <div class="p-2.5 rounded-2xl border transition-all ${isAdult ? 'bg-teal-50/80 border-kawaii-mint' : 'bg-gray-50/80 border-gray-100'} flex items-center justify-between">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-bold text-gray-700">🧑 Adulto:</span>
+                                    <span class="text-xs font-extrabold text-kawaii-mintDark">$390 MXN</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    ${product.adultSizes.map(sz => `
+                                        <button onclick="selectProductSize(${product.id}, 'adult', '${sz}')" 
+                                                class="w-8 h-7 rounded-lg font-extrabold text-xs transition-all ${isAdult && state.size === sz ? 'bg-kawaii-mintDark text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border-kawaii-mint'}">
+                                            ${sz}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Direct WhatsApp Action Button -->
+                        <div class="pt-2">
+                            <a href="${waUrl}" target="_blank" rel="noopener" 
+                               class="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white font-extrabold text-sm py-3 px-4 rounded-2xl shadow-md transition-all">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                                <span>Apartar por WhatsApp (${sizeLabel})</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- MANEJO DE INTERACTIVIDAD ---
+        function changeProductView(productId, viewKey) {
+            productStates[productId].view = viewKey;
+            renderProducts();
+        }
+
+        function selectProductSize(productId, sizeType, size) {
+            productStates[productId].sizeType = sizeType;
+            productStates[productId].size = size;
+            renderProducts();
+            const typeText = sizeType === 'adult' ? 'Adulto' : 'Infantil';
+            const priceText = sizeType === 'adult' ? '$390 MXN' : '$350 MXN';
+            showToast(`Talla ${typeText} ${size} (${priceText}) seleccionada`);
+        }
+
+        // --- MANEJO DEL MODAL (LIGHTBOX) ---
+        function openImageModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            activeModalProductId = productId;
+            const state = productStates[productId];
+            
+            document.getElementById('modalTitle').textContent = `${product.modelCode}: ${product.name}`;
+            updateModalView(product, state.view);
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            activeModalProductId = null;
+        }
+
+        function changeModalView(viewKey) {
+            if (!activeModalProductId) return;
+            productStates[activeModalProductId].view = viewKey;
+            const product = products.find(p => p.id === activeModalProductId);
+            updateModalView(product, viewKey);
+            renderProducts();
+        }
+
+        function updateModalView(product, viewKey) {
+            const container = document.getElementById('modalImageContainer');
+            if (container) container.innerHTML = renderProductMedia(product, viewKey);
+            
+            const subtitle = document.getElementById('modalSubtitle');
+            if (subtitle) subtitle.textContent = `Vista ampliada: ${viewLabels[viewKey]}`;
+
+            const thumbsContainer = document.getElementById('modalThumbnails');
+            if (thumbsContainer) {
+                thumbsContainer.innerHTML = Object.keys(viewLabels).map(vKey => {
+                    const isActive = vKey === viewKey;
+                    return `
+                    <button onclick="changeModalView('${vKey}')" 
+                            class="px-3 py-1.5 rounded-xl border-2 font-bold text-xs transition-all ${isActive ? 'border-kawaii-pink bg-kawaii-pink text-white shadow-sm' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-kawaii-pink'}">
+                        ${viewLabels[viewKey]}
+                    </button>`;
+                }).join('');
+            }
+        }
+
+        // --- FILTROS Y BÚSQUEDA ---
+        function setCategory(category) {
+            activeCategory = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = 'category-btn border-2 border-transparent bg-kawaii-lightPink text-gray-600 hover:text-kawaii-pink font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap';
+            });
+            const activeBtn = document.getElementById(`catBtn-${category}`);
+            if (activeBtn) {
+                activeBtn.className = 'category-btn border-2 border-kawaii-pink bg-kawaii-pink text-white font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap';
+            }
+
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value;
+            renderProducts();
+        }
+
+        function resetFilters() {
+            const input = document.getElementById('searchInput');
+            if (input) input.value = '';
+            searchQuery = '';
+            setCategory('Todos');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            if (toast && toastMsg) {
+                toastMsg.textContent = message;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2500);
+            }
+        }
+
+        // Inicialización segura e inmediata
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderProducts);
+        } else {
+            renderProducts();
+        }
+    </script>
+</body>
+</html>
