@@ -356,7 +356,7 @@
             {
                 id: 5,
                 modelCode: "Modelo 05",
-                name: "Picachu",
+                name: "Pikachu",
                 category: "Gaming",
                 childPrice: 350,
                 adultPrice: 390,
@@ -368,6 +368,13 @@
                 badge: "⚡ Edición Eléctrica",
                 images: {
                     child: {
+                        pose: 'modelo5/inf/pose.jpeg',
+                        frente: 'modelo5/inf/frente.jpeg',
+                        lateral: 'modelo5/inf/lateral.jpeg',
+                        espalda: 'modelo5/inf/espalda.jpeg',
+                        maniqui: 'modelo5/inf/maniqui.jpeg'
+                    },
+                    adult: {
                         pose: 'modelo5/inf/pose.jpeg',
                         frente: 'modelo5/inf/frente.jpeg',
                         lateral: 'modelo5/inf/lateral.jpeg',
@@ -489,7 +496,6 @@
                 );
                 const waUrl = 'https://wa.me/' + currentWhatsAppNumber + '?text=' + waMessage;
 
-                // Construcción limpia de miniaturas
                 let thumbsHtml = '';
                 const viewKeys = Object.keys(viewLabels);
                 for (let j = 0; j < viewKeys.length; j++) {
@@ -505,11 +511,222 @@
                     thumbsHtml += '</button>';
                 }
 
-                // Tallas infantiles
                 let childSizesHtml = '';
                 const cSizes = product.childSizes || [];
                 for (let k = 0; k < cSizes.length; k++) {
                     const sz = cSizes[k];
                     const isSelected = !isAdult && state.size === sz;
                     const btnStyle = isSelected ? 'bg-kawaii-pink text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border-kawaii-pink';
-                    childSizesHtml += '<button onclick="selectProductSize(' + product.id + ', \'child\', \'' + sz + '\')" class="w-7 h-7 rounded-lg font-ext
+                    childSizesHtml += '<button onclick="selectProductSize(' + product.id + ', \'child\', \'' + sz + '\')" class="w-7 h-7 rounded-lg font-extrabold text-xs transition-all ' + btnStyle + '">' + sz + '</button>';
+                }
+
+                let adultSizesHtml = '';
+                if (hasAdultSizes) {
+                    for (let m = 0; m < product.adultSizes.length; m++) {
+                        const sz = product.adultSizes[m];
+                        const isSelected = isAdult && state.size === sz;
+                        const btnStyle = isSelected ? 'bg-kawaii-mintDark text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border-kawaii-mint';
+                        adultSizesHtml += '<button onclick="selectProductSize(' + product.id + ', \'adult\', \'' + sz + '\')" class="w-8 h-7 rounded-lg font-extrabold text-xs transition-all ' + btnStyle + '">' + sz + '</button>';
+                    }
+                } else {
+                    adultSizesHtml = '<span class="text-xs font-extrabold text-red-500 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">🚫 Agotado</span>';
+                }
+
+                htmlContent += `
+                <div class="bg-white rounded-3xl border-2 border-kawaii-softPink p-5 md:p-6 transition-all hover:border-kawaii-pink kawaii-card-shadow flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="inline-block bg-kawaii-lightPink text-kawaii-pink font-extrabold text-[11px] px-2.5 py-0.5 rounded-full mb-1">
+                                ${product.badge}
+                            </span>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">${product.modelCode}</h4>
+                            <h3 class="text-xl font-extrabold text-gray-800 leading-tight">${product.name}</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-black ${isAdult ? 'text-teal-500' : 'text-kawaii-pink'} transition-colors">$${currentPrice}</span>
+                            <span class="text-xs font-bold text-gray-400 block">${product.currency}</span>
+                        </div>
+                    </div>
+
+                    <div class="my-3">
+                        <div class="relative bg-gray-50 rounded-2xl p-2 border border-pink-100 zoom-cursor group overflow-hidden" 
+                             onclick="openImageModal(${product.id})">
+                            <div class="w-full flex items-center justify-center min-h-[260px]">
+                                ${renderProductMedia(product, activeViewKey)}
+                            </div>
+                            <div class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5 opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all">
+                                <i class="fa-solid fa-magnifying-glass-plus text-kawaii-pink"></i>
+                                <span>Ver HD Pantalla Completa</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 grid grid-cols-5 gap-1.5">
+                            ${thumbsHtml}
+                        </div>
+                    </div>
+
+                    <div class="mt-2 pt-3 border-t border-gray-100">
+                        <p class="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">${product.description}</p>
+                        
+                        <div class="flex flex-wrap gap-1.5 mb-4">
+                            <span class="bg-teal-50 text-teal-700 border border-teal-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">🧵 Bordado</span>
+                            <span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">🧸 Térmico Afelpado</span>
+                            <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full">🧶 Poliéster</span>
+                        </div>
+
+                        <div class="mb-4 space-y-2">
+                            <div class="p-2.5 rounded-2xl border transition-all ${!isAdult ? 'bg-pink-50/80 border-kawaii-pink' : 'bg-gray-50/80 border-gray-100'} flex items-center justify-between">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-bold text-gray-700">👶 Infantil:</span>
+                                    <span class="text-xs font-extrabold text-kawaii-pink">$350 MXN</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    ${childSizesHtml}
+                                </div>
+                            </div>
+
+                            <div class="p-2.5 rounded-2xl border transition-all ${isAdult ? 'bg-teal-50/80 border-kawaii-mint' : 'bg-gray-50/80 border-gray-100'} flex items-center justify-between">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-xs font-bold text-gray-700">🧑 Adulto:</span>
+                                    <span class="text-xs font-extrabold ${hasAdultSizes ? 'text-kawaii-mintDark' : 'text-gray-400'}">$390 MXN</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    ${adultSizesHtml}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <a href="${waUrl}" target="_blank" rel="noopener" 
+                               class="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white font-extrabold text-sm py-3 px-4 rounded-2xl shadow-md transition-all">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                                <span>Apartar por WhatsApp (${sizeLabel})</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            grid.innerHTML = htmlContent;
+        }
+
+        function changeProductView(productId, viewKey) {
+            if (!productStates[productId]) {
+                productStates[productId] = { view: 'pose', sizeType: 'child', size: 'M' };
+            }
+            productStates[productId].view = viewKey;
+            renderProducts();
+        }
+
+        function selectProductSize(productId, sizeType, size) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            if (sizeType === 'adult' && (!product.adultSizes || product.adultSizes.length === 0)) {
+                showToast('⚠️ Las tallas de adulto para este modelo están agotadas');
+                return;
+            }
+            
+            if (!productStates[productId]) {
+                productStates[productId] = { view: 'pose', sizeType: 'child', size: 'M' };
+            }
+            productStates[productId].sizeType = sizeType;
+            productStates[productId].size = size;
+            renderProducts();
+            
+            const typeText = sizeType === 'adult' ? 'Adulto' : 'Infantil';
+            const priceText = sizeType === 'adult' ? '$390 MXN' : '$350 MXN';
+            showToast(`Talla ${typeText} ${size} (${priceText}) seleccionada`);
+        }
+
+        function openImageModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            activeModalProductId = productId;
+            const state = productStates[productId] || { view: 'pose' };
+            
+            document.getElementById('modalTitle').textContent = `${product.modelCode}: ${product.name}`;
+            updateModalView(product, state.view || 'pose');
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            activeModalProductId = null;
+        }
+
+        function changeModalView(viewKey) {
+            if (!activeModalProductId) return;
+            if (!productStates[activeModalProductId]) {
+                productStates[activeModalProductId] = { view: 'pose', sizeType: 'child', size: 'M' };
+            }
+            productStates[activeModalProductId].view = viewKey;
+            const product = products.find(p => p.id === activeModalProductId);
+            updateModalView(product, viewKey);
+            renderProducts();
+        }
+
+        function updateModalView(product, viewKey) {
+            const container = document.getElementById('modalImageContainer');
+            if (container) container.innerHTML = renderProductMedia(product, viewKey);
+            
+            const subtitle = document.getElementById('modalSubtitle');
+            if (subtitle) subtitle.textContent = `Vista ampliada: ${viewLabels[viewKey] || 'General'}`;
+
+            const thumbsContainer = document.getElementById('modalThumbnails');
+            if (thumbsContainer) {
+                thumbsContainer.innerHTML = Object.keys(viewLabels).map(vKey => {
+                    const isActive = vKey === viewKey;
+                    return `
+                    <button onclick="changeModalView('${vKey}')" 
+                            class="px-3 py-1.5 rounded-xl border-2 font-bold text-xs transition-all ${isActive ? 'border-kawaii-pink bg-kawaii-pink text-white shadow-sm' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-kawaii-pink'}">
+                        ${viewLabels[vKey]}
+                    </button>`;
+                }).join('');
+            }
+        }
+
+        function setCategory(category) {
+            activeCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = 'category-btn border-2 border-transparent bg-kawaii-lightPink text-gray-600 hover:text-kawaii-pink font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap';
+            });
+            const activeBtn = document.getElementById(`catBtn-${category}`);
+            if (activeBtn) {
+                activeBtn.className = 'category-btn border-2 border-kawaii-pink bg-kawaii-pink text-white font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap';
+            }
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value;
+            renderProducts();
+        }
+
+        function resetFilters() {
+            const input = document.getElementById('searchInput');
+            if (input) input.value = '';
+            searchQuery = '';
+            setCategory('Todos');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            if (toast && toastMsg) {
+                toastMsg.textContent = message;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2500);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderProducts);
+        } else {
+            renderProducts();
+        }
+    </script>
+</body>
+</html>
