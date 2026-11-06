@@ -133,7 +133,6 @@
                 </p>
             </div>
             
-            <!-- Recuadros de Tallas y Precios -->
             <div class="flex flex-wrap items-center gap-3 z-10 justify-center">
                 <div class="bg-white/90 backdrop-blur-sm px-4 py-3 rounded-2xl border border-pink-200 text-left shadow-sm flex items-center gap-3 hover:scale-105 transition-transform">
                     <div class="w-10 h-10 rounded-xl bg-pink-100 text-kawaii-pink flex items-center justify-center font-extrabold text-lg">
@@ -167,9 +166,9 @@
             </h3>
         </div>
 
-        <!-- Grid -->
+        <!-- Grid Container -->
         <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Renderizado dinámico -->
+            <!-- Cards inyectadas por JS -->
         </div>
 
         <!-- Estado Vacío -->
@@ -210,14 +209,14 @@
         <span id="toastMessage">Selección actualizada</span>
     </div>
 
-    <!-- JavaScript Data and Application Logic -->
+    <!-- JavaScript Application Logic -->
     <script>
         const currentWhatsAppNumber = "525529950022";
         let activeCategory = "Todos";
         let searchQuery = "";
         let activeModalProductId = null;
 
-        // Estado interactivo de vistas y tallas por producto (Incluye ID 5)
+        // Estado inicial robusto
         const productStates = {
             1: { view: 'pose', sizeType: 'child', size: 'M' },
             2: { view: 'pose', sizeType: 'child', size: 'M' },
@@ -234,7 +233,6 @@
             maniqui: "Maniquí Fantasma"
         };
 
-        // Base de Datos del Catálogo
         const products = [
             {
                 id: 1,
@@ -383,7 +381,7 @@
 
         function getImagePath(product, viewKey) {
             const state = productStates[product.id] || { sizeType: 'child' };
-            const sizeType = state.sizeType;
+            const sizeType = state.sizeType || 'child';
             
             if (product.images && product.images[sizeType] && product.images[sizeType][viewKey]) {
                 return product.images[sizeType][viewKey];
@@ -444,7 +442,7 @@
             </svg>`;
         }
 
-        // --- RENDERIZADO PRINCIPAL ---
+        // --- RENDERIZADO PRINCIPAL DEFENSIVO ---
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
             const emptyState = document.getElementById('emptyState');
@@ -470,9 +468,19 @@
             }
 
             grid.innerHTML = filtered.map(product => {
-                const state = productStates[product.id] || { view: 'pose', sizeType: 'child', size: 'M' };
-                const activeViewKey = state.view;
-                const hasAdultSizes = product.adultSizes && product.adultSizes.length > 0;
+                // Asegurar inicialización de estado sin fallos
+                if (!productStates[product.id]) {
+                    productStates[product.id] = { view: 'pose', sizeType: 'child', size: 'M' };
+                }
+                const state = productStates[product.id];
+                const activeViewKey = state.view || 'pose';
+                const hasAdultSizes = Array.isArray(product.adultSizes) && product.adultSizes.length > 0;
+                
+                // Si no hay tallas de adulto, forzar vista infantil
+                if (!hasAdultSizes && state.sizeType === 'adult') {
+                    state.sizeType = 'child';
+                }
+
                 const isAdult = state.sizeType === 'adult' && hasAdultSizes;
                 const currentPrice = isAdult ? product.adultPrice : product.childPrice;
                 const sizeLabel = isAdult ? `Adulto (${state.size})` : `Infantil (${state.size})`;
@@ -559,7 +567,7 @@
                                     <span class="text-xs font-extrabold text-kawaii-pink">$350 MXN</span>
                                 </div>
                                 <div class="flex items-center gap-1">
-                                    ${product.childSizes.map(sz => `
+                                    ${(product.childSizes || []).map(sz => `
                                         <button onclick="selectProductSize(${product.id}, 'child', '${sz}')" 
                                                 class="w-7 h-7 rounded-lg font-extrabold text-xs transition-all ${!isAdult && state.size === sz ? 'bg-kawaii-pink text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border-kawaii-pink'}">
                                             ${sz}
@@ -577,4 +585,145 @@
                                 <div class="flex items-center gap-1">
                                     ${hasAdultSizes ? product.adultSizes.map(sz => `
                                         <button onclick="selectProductSize(${product.id}, 'adult', '${sz}')" 
-                                                class="w-8 h-7 rounded-lg font-extrabold text-xs transition-all ${isAdult && state.size === sz ? 'bg-kawaii-mintDark text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border
+                                                class="w-8 h-7 rounded-lg font-extrabold text-xs transition-all ${isAdult && state.size === sz ? 'bg-kawaii-mintDark text-white shadow-sm scale-105' : 'bg-white text-gray-600 border border-gray-200 hover:border-kawaii-mint'}">
+                                            ${sz}
+                                        </button>
+                                    `).join('') : '<span class="text-xs font-extrabold text-red-500 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">🚫 Agotado</span>'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Direct WhatsApp Action Button -->
+                        <div class="pt-2">
+                            <a href="${waUrl}" target="_blank" rel="noopener" 
+                               class="w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white font-extrabold text-sm py-3 px-4 rounded-2xl shadow-md transition-all">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                                <span>Apartar por WhatsApp (${sizeLabel})</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function changeProductView(productId, viewKey) {
+            if (!productStates[productId]) {
+                productStates[productId] = { view: 'pose', sizeType: 'child', size: 'M' };
+            }
+            productStates[productId].view = viewKey;
+            renderProducts();
+        }
+
+        function selectProductSize(productId, sizeType, size) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            if (sizeType === 'adult' && (!product.adultSizes || product.adultSizes.length === 0)) {
+                showToast('⚠️ Las tallas de adulto para este modelo están agotadas');
+                return;
+            }
+            
+            if (!productStates[productId]) {
+                productStates[productId] = { view: 'pose', sizeType: 'child', size: 'M' };
+            }
+            productStates[productId].sizeType = sizeType;
+            productStates[productId].size = size;
+            renderProducts();
+            
+            const typeText = sizeType === 'adult' ? 'Adulto' : 'Infantil';
+            const priceText = sizeType === 'adult' ? '$390 MXN' : '$350 MXN';
+            showToast(`Talla ${typeText} ${size} (${priceText}) seleccionada`);
+        }
+
+        function openImageModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            activeModalProductId = productId;
+            const state = productStates[productId] || { view: 'pose' };
+            
+            document.getElementById('modalTitle').textContent = `${product.modelCode}: ${product.name}`;
+            updateModalView(product, state.view || 'pose');
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+            activeModalProductId = null;
+        }
+
+        function changeModalView(viewKey) {
+            if (!activeModalProductId) return;
+            if (!productStates[activeModalProductId]) {
+                productStates[activeModalProductId] = { view: 'pose', sizeType: 'child', size: 'M' };
+            }
+            productStates[activeModalProductId].view = viewKey;
+            const product = products.find(p => p.id === activeModalProductId);
+            updateModalView(product, viewKey);
+            renderProducts();
+        }
+
+        function updateModalView(product, viewKey) {
+            const container = document.getElementById('modalImageContainer');
+            if (container) container.innerHTML = renderProductMedia(product, viewKey);
+            
+            const subtitle = document.getElementById('modalSubtitle');
+            if (subtitle) subtitle.textContent = `Vista ampliada: ${viewLabels[viewKey] || 'General'}`;
+
+            const thumbsContainer = document.getElementById('modalThumbnails');
+            if (thumbsContainer) {
+                thumbsContainer.innerHTML = Object.keys(viewLabels).map(vKey => {
+                    const isActive = vKey === viewKey;
+                    return `
+                    <button onclick="changeModalView('${vKey}')" 
+                            class="px-3 py-1.5 rounded-xl border-2 font-bold text-xs transition-all ${isActive ? 'border-kawaii-pink bg-kawaii-pink text-white shadow-sm' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-kawaii-pink'}">
+                        ${viewLabels[vKey]}
+                    </button>`;
+                }).join('');
+            }
+        }
+
+        function setCategory(category) {
+            activeCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = 'category-btn border-2 border-transparent bg-kawaii-lightPink text-gray-600 hover:text-kawaii-pink font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap';
+            });
+            const activeBtn = document.getElementById(`catBtn-${category}`);
+            if (activeBtn) {
+                activeBtn.className = 'category-btn border-2 border-kawaii-pink bg-kawaii-pink text-white font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap';
+            }
+            renderProducts();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value;
+            renderProducts();
+        }
+
+        function resetFilters() {
+            const input = document.getElementById('searchInput');
+            if (input) input.value = '';
+            searchQuery = '';
+            setCategory('Todos');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            if (toast && toastMsg) {
+                toastMsg.textContent = message;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 2500);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderProducts);
+        } else {
+            renderProducts();
+        }
+    </script>
+</body>
+</html>
