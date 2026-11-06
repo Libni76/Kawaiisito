@@ -86,7 +86,7 @@
             <!-- Search Bar -->
             <div class="flex-1 max-w-md min-w-[200px]">
                 <div class="relative">
-                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar personaje (Spiderman, Stitch, Sonic...)" 
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar personaje (Spiderman, Stitch, Sonic, Pikachu...)" 
                            class="w-full bg-kawaii-lightPink/80 border-2 border-kawaii-softPink focus:border-kawaii-pink rounded-full py-2 pl-10 pr-4 text-sm font-semibold focus:outline-none focus:bg-white transition-all text-gray-700">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-kawaii-pink text-sm"></i>
                 </div>
@@ -164,7 +164,7 @@
         <div class="flex justify-between items-center mb-6">
             <h3 id="catalogTitle" class="text-xl font-extrabold text-gray-800 flex items-center gap-2">
                 <span>Catálogo de Mamelucos</span>
-                <span id="productCountBadge" class="bg-kawaii-softPink text-kawaii-pink text-xs px-2.5 py-0.5 rounded-full font-bold">4 modelos</span>
+                <span id="productCountBadge" class="bg-kawaii-softPink text-kawaii-pink text-xs px-2.5 py-0.5 rounded-full font-bold">5 modelos</span>
             </h3>
         </div>
 
@@ -223,12 +223,13 @@
         let searchQuery = "";
         let activeModalProductId = null;
 
-        // Estado interactivo de vistas y tallas por producto
+        // Estado interactivo de vistas y tallas por producto (incluye modelo 5)
         const productStates = {
             1: { view: 'pose', sizeType: 'child', size: 'M' },
             2: { view: 'pose', sizeType: 'child', size: 'M' },
             3: { view: 'pose', sizeType: 'child', size: 'M' },
-            4: { view: 'pose', sizeType: 'child', size: 'M' }
+            4: { view: 'pose', sizeType: 'child', size: 'M' },
+            5: { view: 'pose', sizeType: 'child', size: 'M' }
         };
 
         // Nombres de vistas
@@ -365,7 +366,7 @@
             {
                 id: 5,
                 modelCode: "Modelo 05",
-                name: "Picachu",
+                name: "Pikachu",
                 category: "Gaming",
                 childPrice: 350,
                 adultPrice: 390,
@@ -373,7 +374,7 @@
                 childSizes: ["CH", "M", "G"],
                 adultSizes: ["M", "G", "EXG"],
                 detail: "Bordado",
-                description: "¡Pika-pika! Mameluco de Pikachu en amarillo vibrante con su icónica cola de rayo acolchada, franjas traseras y detalles faciales 100% bordados.",
+                description: "¡Pika-pika! Mameluco de Pikachu en amarillo vibrante con su icónica cola de rayo acolchada, orejas en la capucha y detalles faciales 100% bordados.",
                 badge: "⚡ Edición Eléctrica",
                 images: {
                     child: {
@@ -383,9 +384,15 @@
                         espalda: 'modelo5/inf/espalda.jpeg',
                         maniqui: 'modelo5/inf/maniqui.jpeg'
                     },
+                    adult: {
+                        pose: 'modelo5/ad/pose.jpeg',
+                        frente: 'modelo5/ad/frente.jpeg',
+                        lateral: 'modelo5/ad/lateral.jpeg',
+                        espalda: 'modelo5/ad/espalda.jpeg',
+                        maniqui: 'modelo5/ad/maniqui.jpeg'
+                    }
                 }
             }
-
         ];
 
         // Obtener ruta de la imagen según vista y tipo de talla (Infantil / Adulto)
@@ -400,7 +407,7 @@
                 return product.images.child[viewKey];
             }
             const folderType = sizeType === 'adult' ? 'ad' : 'inf';
-            return `modelo${product.id}/${folderType}/${viewKey}.jpg`;
+            return `modelo${product.id}/${folderType}/${viewKey}.jpeg`;
         }
 
         function handleImageError(img, productId, viewKey) {
@@ -422,7 +429,8 @@
                 1: { primary: '#E63946', secondary: '#1D3557', accent: '#FFF' },
                 2: { primary: '#FF8FAB', secondary: '#FFC6FF', accent: '#9B5DE5' },
                 3: { primary: '#4EECD4', secondary: '#9B5DE5', accent: '#FFF' },
-                4: { primary: '#0077B6', secondary: '#FEE440', accent: '#FFF' }
+                4: { primary: '#0077B6', secondary: '#FEE440', accent: '#FFF' },
+                5: { primary: '#FEE440', secondary: '#E09F3E', accent: '#FFF' }
             };
             const col = colors[id] || { primary: '#FF8FAB', secondary: '#4EECD4', accent: '#FFF' };
 
@@ -448,9 +456,6 @@
                 <circle cx="85" cy="65" r="5" fill="#333" />
                 <circle cx="115" cy="65" r="5" fill="#333" />
                 <path d="M 92 75 Q 100 83 108 75" stroke="#333" stroke-width="3" fill="none" stroke-linecap="round" />
-                <!-- Detalle Kawaii -->
-                <circle cx="78" cy="73" r="4" fill="#FF8FAB" opacity="0.6" />
-                <circle cx="122" cy="73" r="4" fill="#FF8FAB" opacity="0.6" />
             </svg>`;
         }
 
