@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kawaiisito - Productos Adorables</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kawaii: {
+                            pink: '#FF8FAB',
+                            lightPink: '#FFF0F5',
+                            softPink: '#FFE4EC',
+                            mint: '#4EECD4',
+                            mintDark: '#2CBCA6',
+                            purple: '#9B5DE5',
+                            yellow: '#FEE440',
+                            dark: '#33272A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', 'Nunito', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+            background-color: #FFF7F9;
+            color: #33272A;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .kawaii-shadow {
+            box-shadow: 0 8px 24px -4px rgba(255, 143, 171, 0.25);
+        }
+        .kawaii-card-shadow {
+            box-shadow: 0 10px 30px -5px rgba(255, 143, 171, 0.15);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .zoom-cursor {
+            cursor: zoom-in;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-12">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-gradient-to-r from-kawaii-pink via-pink-400 to-kawaii-mint text-white text-xs md:text-sm font-bold py-2 px-4 text-center shadow-sm">
+        ✨ Mamelucos 100% Adorables Bordados, vístete de ternura 💕
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-kawaii-softPink">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer" onclick="resetFilters()">
+                <div class="w-10 h-10 rounded-full bg-kawaii-pink flex items-center justify-center text-white text-xl shadow-md transform hover:rotate-12 transition-transform">
+                    🧸
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black text-kawaii-pink leading-none tracking-wide">Kawaiisito</h1>
+                    <p class="text-[11px] font-bold text-gray-500 tracking-wider uppercase mt-0.5">Productos Adorables</p>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-md min-w-[200px]">
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar personaje (Spiderman, Capitán América, Stitch, Sonic...)" 
+                           class="w-full bg-kawaii-lightPink/80 border-2 border-kawaii-softPink focus:border-kawaii-pink rounded-full py-2 pl-10 pr-4 text-sm font-semibold focus:outline-none focus:bg-white transition-all text-gray-700">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-kawaii-pink text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Direct Contact Link -->
+            <div class="flex items-center gap-2">
+                <a href="https://wa.me/525529950022" target="_blank" rel="noopener" class="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold text-xs px-3.5 py-2 rounded-full transition-all border border-emerald-200 shadow-sm">
+                    <i class="fa-brands fa-whatsapp text-sm text-emerald-500"></i>
+                    <span>55 2995 0022</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <button onclick="setCategory('Todos')" id="catBtn-Todos" class="category-btn border-2 border-kawaii-pink bg-kawaii-pink text-white font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap">
+                ✨ Todos los Mamelucos
+            </button>
+            <button onclick="setCategory('Superhéroes')" id="catBtn-Superhéroes" class="category-btn border-2 border-transparent bg-kawaii-lightPink text-gray-600 hover:text-kawaii-pink font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap">
+                🦸‍♂️ Superhéroes
+            </button>
+            <button onclick="setCategory('Disney')" id="catBtn-Disney" class="category-btn border-2 border-transparent bg-kawaii-lightPink text-gray-600 hover:text-kawaii-pink font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap">
+                🌺 Disney & Películas
+            </button>
+            <button onclick="setCategory('Gaming')" id="catBtn-Gaming" class="category-btn border-2 border-transparent bg-kawaii-lightPink text-gray-600 hover:text-kawaii-pink font-bold text-xs px-4 py-1.5 rounded-full transition-all whitespace-nowrap">
+                🦔 Gaming & Anime
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="bg-gradient-to-r from-pink-100 via-purple-50 to-teal-50 border border-pink-200/60 rounded-3xl p-6 md:p-8 flex flex-col md
